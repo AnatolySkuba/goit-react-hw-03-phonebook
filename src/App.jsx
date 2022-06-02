@@ -15,8 +15,16 @@ export class App extends Component {
     const { contacts } = this.state;
     contacts.some(contact => contact.name === name)
       ? alert(`${name} is already in contacts`)
-      : contacts.push({ id: nanoid(), name: name, number: number });
-    this.setState({ contacts: contacts });
+      : this.setState(prevState => ({
+          contacts: [
+            ...prevState.contacts,
+            {
+              id: nanoid(),
+              name: name,
+              number: number,
+            },
+          ],
+        }));
   };
 
   handleChange = evt => {
@@ -24,15 +32,20 @@ export class App extends Component {
   };
 
   handleDelete = id => {
-    // const { contacts } = this.state;
-    // contacts.forEach(
-    //   (contact, index) => contact.id === id && contacts.splice(index, 1)
-    // );
-    // this.setState({ contacts: contacts });
     this.setState(prevState => ({
       contacts: prevState.contacts.filter(contact => contact.id !== id),
     }));
   };
+
+  componentDidUpdate(prevProps, prevState) {
+    this.state.contacts !== prevState.contacts &&
+      localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
+  }
+
+  componentDidMount() {
+    const contacts = JSON.parse(localStorage.getItem('contacts'));
+    contacts && this.setState({ contacts: contacts });
+  }
 
   render() {
     const { contacts, filter } = this.state;
